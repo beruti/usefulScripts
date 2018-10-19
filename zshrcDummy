@@ -1,0 +1,163 @@
+
+# export PATH=/usr/local/bin:$PATH
+
+# Path to your oh-my-zsh installation.
+export ZSH=/Users/ainnes/.oh-my-zsh
+
+# Set name of the theme to load. Optionally, if you set this to "random"
+# it'll load a random theme each time that oh-my-zsh is loaded.
+# See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
+ZSH_THEME="robbyrussell"
+
+# Uncomment the following line to use case-sensitive completion.
+# CASE_SENSITIVE="true"
+
+# Uncomment the following line to use hyphen-insensitive completion. Case
+# sensitive completion must be off. _ and - will be interchangeable.
+# HYPHEN_INSENSITIVE="true"
+
+# Uncomment the following line to disable bi-weekly auto-update checks.
+# DISABLE_AUTO_UPDATE="true"
+
+# Uncomment the following line to change how often to auto-update (in days).
+# export UPDATE_ZSH_DAYS=13
+
+# Uncomment the following line to disable colors in ls.
+# DISABLE_LS_COLORS="true"
+
+# Uncomment the following line to disable auto-setting terminal title.
+# DISABLE_AUTO_TITLE="true"
+
+# Uncomment the following line to enable command auto-correction.
+# ENABLE_CORRECTION="true"
+
+# Uncomment the following line to display red dots whilst waiting for completion.
+# COMPLETION_WAITING_DOTS="true"
+
+# Uncomment the following line if you want to disable marking untracked files
+# under VCS as dirty. This makes repository status check for large repositories
+# much, much faster.
+# DISABLE_UNTRACKED_FILES_DIRTY="true"
+
+# Uncomment the following line if you want to change the command execution time
+# stamp shown in the history command output.
+# The optional three formats: "mm/dd/yyyy"|"dd.mm.yyyy"|"yyyy-mm-dd"
+# HIST_STAMPS="mm/dd/yyyy"
+
+# Would you like to use another custom folder than $ZSH/custom?
+# ZSH_CUSTOM=/path/to/new-custom-folder
+
+# Which plugins would you like to load? (plugins can be found in ~/.oh-my-zsh/plugins/*)
+# Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
+# Example format: plugins=(rails git textmate ruby lighthouse)
+# Add wisely, as too many plugins slow down shell startup.
+plugins=(git kubectl gem aws heroku docker vault)
+
+source $ZSH/oh-my-zsh.sh
+
+# User configuration
+
+# export MANPATH="/usr/local/man:$MANPATH"
+
+# You may need to manually set your language environment
+# export LANG=en_US.UTF-8
+
+# Preferred editor for local and remote sessions
+# if [[ -n $SSH_CONNECTION ]]; then
+#   export EDITOR='vim'
+# else
+#   export EDITOR='mvim'
+# fi
+
+export EDITOR='atom -w -n'
+export PAGER='less -f'
+
+# Compilation flags
+# export ARCHFLAGS="-arch x86_64"
+
+# ssh
+# export SSH_KEY_PATH="~/.ssh/rsa_id"
+
+#cleanDocker function to remove old containers
+function cleanDocker {
+    	     docker stop $(docker ps -q)         # Stop all running containers.
+             docker rm $(docker ps -aq)          # Remove all stopped containers
+             docker rmi $(docker images -q --filter "dangling=true")      # Remove all dangling images
+        }
+
+function accessNonprodVault {
+	export VAULT_ADDR=
+	vault auth -method=ldap username= 
+}
+
+function accessProdVault {
+        export VAULT_ADDR=
+        vault auth -method=ldap username=
+}
+
+function accessCanVault {
+        export VAULT_ADDR=
+        vault auth -method=ldap username=
+}
+
+kubeNpExec () {
+	echo "pod is $1" 
+	kubectl --kubeconfig ~/.kube/nonProdconfig exec -it $1 /bin/sh
+}
+
+kubeNpLogs () {
+        echo "pod is $1"
+        kubectl --kubeconfig ~/.kube/nonProdconfig logs $1 -f
+}
+
+kubePrExec () {
+        echo "pod is $1"
+        kubectl --kubeconfig ~/.kube/PRODconfig exec -it $1 /bin/sh
+}
+
+#vault aliases
+alias submissionDevPassword='vault read ${vaultPath}'
+alias submissionProdPassword='vault read secret/pr-aukprd1/AUK/db_passwords/dcj_submission_user'
+alias paymentsProdPassword='vault read secret/pr-aukprd1/AUK/db_passwords/dcj_payments_user'
+
+alias changeToPR='cp ~/.kube/PRODconfig ~/.kube/config' 
+alias changeToNP='cp ~/.kube/nonProdconfig ~/.kube/config'
+alias changeToDtzo='cp ~/.kube/dtzoConfig ~/.kube/config' 
+alias kubenp='kubectl --kubeconfig ~/.kube/nonProdconfig'
+alias kubeDtzo='kubectl --kubeconfig ~/.kube/dtzoConfig get pods'
+alias kubeNpPods='kubectl --kubeconfig ~/.kube/nonProdconfig get pods'
+alias kubepr='kubectl --kubeconfig ~/.kube/prodConfig'
+alias kubePrPods='kubectl --kubeconfig ~/.kube/PRODconfig get pods'
+alias kubeprepr='kubectl --kubeconfig ~/.kube/preProdConfig'
+alias kubepreprABS='kubectl --kubeconfig ~/.kube/preProdABSConfig'
+alias kubenp1='kubectl --kubeconfig ~/.kube/nonProdCSDPconfig'
+alias kubeprABS='kubectl --kubeconfig ~/.kube/prodABSConfig'
+
+alias startAllHO="cd /Users/ainnes/HO/repos/dcj && mailcatcher status && foreman start --procfile all"	
+alias startAllButCustomerHO="cd /Users/ainnes/HO/repos/dcj && foreman start --procfile all-but-customer"
+
+alias dcj="cd /Users/ainnes/HO/repos/dcj"
+
+mkcdir ()
+{
+    mkdir -p -- "$1" &&
+      cd -P -- "$1"
+}
+
+gNews() {curl -s https://newsapi.org/v2/top-headlines\?sources\=the-guardian-uk\&apiKey\=${newsApiKey} | jq --raw-output -C '.articles[0,1,2,3,4] | '.title', '.description', '.url'' | awk -v n=3 'NR %n == 1 {print "\033[34m"$0"\033[0m"}; NR %n !=1 {print $0}' | awk -v n=3 '1; NR % n == 0 {print ""}'}
+
+wiredNews() {curl -s https://newsapi.org/v2/top-headlines\?sources\=wired\&apiKey\=${newsApiKey} | jq --raw-output -C '.articles[0,1,2,3,4] | '.title', '.description', '.url'' | awk -v n=3 'NR %n == 1 {print "\033[34m"$0"\033[0m"}; NR %n !=1 {print $0}' | awk -v n=3 '1; NR % n == 0 {print ""}'}
+
+hackerNews() {curl -s https://newsapi.org/v2/top-headlines\?sources\=hacker-news\&apiKey\=${newsApiKey} | jq --raw-output -C '.articles[0,1,2,3,4] | '.title', '.description', '.url'' | awk -v n=3 'NR %n == 1 {print "\033[34m"$0"\033[0m"}; NR %n !=1 {print $0}' | awk -v n=3 '1; NR % n == 0 {print ""}'}
+
+alias subl="open -a 'Sublime Text'"
+
+# Set personal aliases, overriding those provided by oh-my-zsh libs,
+# plugins, and themes. Aliases can be placed here, though oh-my-zsh
+# users are encouraged to define aliases within the ZSH_CUSTOM folder.
+# For a full list of active aliases, run `alias`.
+#
+# Example aliases
+# alias zshconfig="mate ~/.zshrc"
+# alias ohmyzsh="mate ~/.oh-my-zsh"
+if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
